@@ -6,7 +6,7 @@
 
 #include <SDL2/SDL.h>
 
-// Runs the main game setup, loop, updates, rendering, and cleanup.
+// Controls the main game setup, screens, updates, rendering, and cleanup.
 class Game {
 public:
     Game();
@@ -17,9 +17,19 @@ public:
     void shutdown();
 
 private:
+    enum class GameState {
+        StartScreen,
+        FadingToRoom,
+        Room
+    };
+
     void handleEvents();
     void update();
     void render();
+
+    void renderStartScreen();
+    void renderRoom();
+    void renderFadeOverlay();
 
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -30,8 +40,14 @@ private:
     const int screenHeight;
     const int groundY;
 
+    GameState gameState;
+
+    Texture startScreen;
     Texture background;
     Player player;
+
+    Uint8 fadeAlpha;
+    const Uint8 fadeSpeed;
 };
 
 #endif

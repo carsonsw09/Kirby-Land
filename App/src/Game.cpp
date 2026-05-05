@@ -9,7 +9,10 @@ Game::Game()
       running(false),
       screenWidth(1280),
       screenHeight(720),
-      groundY(650) {
+      groundY(650),
+      gameState(GameState::StartScreen),
+      fadeAlpha(0),
+      fadeSpeed(4) {
 }
 
 Game::~Game() {
@@ -58,6 +61,10 @@ bool Game::initialize() {
         return false;
     }
 
+    if (!startScreen.loadFromFile(renderer, "assets/images/backgrounds/first_screen.png")) {
+        return false;
+    }
+
     if (!background.loadFromFile(renderer, "assets/images/backgrounds/kirby_background.png")) {
         return false;
     }
@@ -91,25 +98,82 @@ void Game::handleEvents() {
             running = false;
         }
 
-        player.handleInput(event);
+        if (gameState == GameState::StartScreen) {
+            if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
+                if (event.key.keysym.sym == SDLK_SPACE) {
+                    gameState = GameState::FadingToRoom;
+                    fadeAlpha = 0;
+                }
+            }
+        }
+        else if (gameState == GameState::Room) {
+            player.handleInput(event);
+        }
     }
 }
 
 void Game::update() {
-    player.update(screenWidth, groundY);
+    if (gameState == GameState::FadingToRoom) {
+        if (fadeAlpha + fadeSpeed >= 255) {
+            fadeAlpha = 255;
+            gameState = GameState::Room;
+        }
+        else {
+            fadeAlpha += fadeSpeed;
+        }
+    }
+
+    if (gameState == GameState::Room) {
+        player.update(screenWidth, groundY);
+    }
 }
 
 void Game::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    background.render(renderer, 0, 0, screenWidth, screenHeight);
-    player.render(renderer);
+    if (gameState == GameState::StartScreen) {
+        renderStartScreen();
+    }
+    else if (gameState == GameState::FadingToRoom) {
+        renderStartScreen();
+        renderFadeOverlay();
+    }
+    else if (gameState == GameState::Room) {
+        renderRoom();
+    }
 
     SDL_RenderPresent(renderer);
 }
 
+void Game::renderStartScreen() {
+    startScreen.render(renderer, 0, 0, screenWidth, screenHeight);
+}
+
+void Game::renderRoom() {
+    background.render(renderer, 0, 0, screenWidth, screenHeight);
+    player.render(renderer);
+}
+
+void Game::renderFadeOverlay() {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, fadeAlpha);
+
+    SDL_Rect fadeRect = {
+        0,
+        0,
+        screenWidth,
+        screenHeight
+    };
+
+    SDL_RenderFillRect(renderer, &fadeRect);
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+}
+
 void Game::shutdown() {
+    startScreen.free();
     background.free();
 
     if (renderer != nullptr) {

@@ -170,6 +170,31 @@ void Texture::render(SDL_Renderer* renderer, int x, int y, int width, int height
     SDL_RenderCopy(renderer, texture, nullptr, &destinationRect);
 }
 
+void Texture::renderFlipped(
+    SDL_Renderer* renderer,
+    int x,
+    int y,
+    int width,
+    int height,
+    SDL_RendererFlip flip
+) {
+    if (texture == nullptr) {
+        return;
+    }
+
+    SDL_Rect destinationRect = { x, y, width, height };
+
+    SDL_RenderCopyEx(
+        renderer,
+        texture,
+        nullptr,
+        &destinationRect,
+        0.0,
+        nullptr,
+        flip
+    );
+}
+
 void Texture::free() {
     if (texture != nullptr) {
         SDL_DestroyTexture(texture);

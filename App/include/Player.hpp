@@ -39,6 +39,8 @@ private:
     bool jumping;
     bool ducking;
 
+    bool facingRight;
+
     const float moveSpeed;
     const float jumpStrength;
     const float gravity;

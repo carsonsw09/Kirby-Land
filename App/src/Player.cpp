@@ -3,7 +3,7 @@
 Player::Player()
     : x(100.0f),
       y(0.0f),
-      width(250),
+      width(220),
       height(300),
       velocityX(0.0f),
       velocityY(0.0f),
@@ -11,7 +11,8 @@ Player::Player()
       movingRight(false),
       jumping(false),
       ducking(false),
-      moveSpeed(5.0f),
+      facingRight(true),
+      moveSpeed(2.5f),
       jumpStrength(-18.0f),
       gravity(0.8f) {
 }
@@ -31,11 +32,13 @@ void Player::handleInput(const SDL_Event& event) {
             case SDLK_a:
             case SDLK_LEFT:
                 movingLeft = true;
+                facingRight = false;
                 break;
 
             case SDLK_d:
             case SDLK_RIGHT:
                 movingRight = true;
+                facingRight = true;
                 break;
 
             case SDLK_s:
@@ -128,7 +131,16 @@ void Player::render(SDL_Renderer* renderer) {
         drawY = static_cast<int>(y + height / 2);
     }
 
-    playerTexture.render(renderer, drawX, drawY, drawWidth, drawHeight);
+    SDL_RendererFlip flip = facingRight ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+    playerTexture.renderFlipped(
+        renderer,
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        flip
+    );
 }
 
 int Player::getWidth() const {
