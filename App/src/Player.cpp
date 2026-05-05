@@ -3,7 +3,7 @@
 Player::Player()
     : x(100.0f),
       y(0.0f),
-      width(220),
+      width(240),
       height(300),
       velocityX(0.0f),
       velocityY(0.0f),
@@ -12,7 +12,7 @@ Player::Player()
       jumping(false),
       ducking(false),
       facingRight(true),
-      moveSpeed(2.5f),
+      moveSpeed(3.5f),
       jumpStrength(-18.0f),
       gravity(0.8f) {
 }
@@ -131,6 +131,7 @@ void Player::render(SDL_Renderer* renderer) {
         drawY = static_cast<int>(y + height / 2);
     }
 
+    // This keeps the direction fix you already liked.
     SDL_RendererFlip flip = facingRight ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
     playerTexture.renderFlipped(
@@ -149,4 +150,23 @@ int Player::getWidth() const {
 
 int Player::getHeight() const {
     return height;
+}
+
+float Player::getX() const {
+    return x;
+}
+
+bool Player::isAtRightEdge(int screenWidth) const {
+    return x + width >= screenWidth - 2;
+}
+
+SDL_Rect Player::getCollisionBox() const {
+    SDL_Rect box = {
+        static_cast<int>(x + width * 0.25f),
+        static_cast<int>(y + height * 0.15f),
+        static_cast<int>(width * 0.50f),
+        static_cast<int>(height * 0.85f)
+    };
+
+    return box;
 }

@@ -22,6 +22,11 @@ public:
     int getWidth() const;
     int getHeight() const;
 
+    float getX() const;
+    bool isAtRightEdge(int screenWidth) const;
+
+    SDL_Rect getCollisionBox() const;
+
 private:
     Texture playerTexture;
 

@@ -1,13 +1,14 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
-LIBS = $(shell sdl2-config --cflags --libs) -lSDL2_image
+LIBS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lSDL2_ttf
 
 TARGET = kirby_land
 
 SRC = src/main.cpp \
       src/Game.cpp \
       src/Player.cpp \
-      src/Texture.cpp
+      src/Texture.cpp \
+      src/CollectibleItem.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

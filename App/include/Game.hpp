@@ -3,8 +3,10 @@
 
 #include "Player.hpp"
 #include "Texture.hpp"
+#include "CollectibleItem.hpp"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 // Controls the main game setup, screens, updates, rendering, and cleanup.
 class Game {
@@ -20,19 +22,34 @@ private:
     enum class GameState {
         StartScreen,
         FadingToRoom,
-        Room
+        Room,
+        FadingToHome,
+        Home
     };
 
     void handleEvents();
     void update();
     void render();
 
+    void enterRoomScene();
+    void enterHomeScene();
+
+    void spawnItems();
+    void checkItemCollisions();
+
     void renderStartScreen();
     void renderRoom();
+    void renderHome();
     void renderFadeOverlay();
+    void renderIntroMessage();
+    void renderCompletionMessage();
+    void renderMessageBox(const char* message);
+    void renderItemCounter();
 
     SDL_Window* window;
     SDL_Renderer* renderer;
+    TTF_Font* font;
+    TTF_Font* counterFont;
 
     bool running;
 
@@ -44,10 +61,22 @@ private:
 
     Texture startScreen;
     Texture background;
+    Texture homeBackground;
     Player player;
+
+    CollectibleItem vape;
+    CollectibleItem phone;
+    CollectibleItem purse;
+
+    int collectedItems;
+    const int totalItems;
 
     Uint8 fadeAlpha;
     const Uint8 fadeSpeed;
+
+    bool playerLocked;
+    Uint32 roomStartTime;
+    const Uint32 playerLockDuration;
 };
 
 #endif
