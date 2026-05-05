@@ -3,8 +3,8 @@
 Player::Player()
     : x(100.0f),
       y(0.0f),
-      width(120),
-      height(180),
+      width(250),
+      height(300),
       velocityX(0.0f),
       velocityY(0.0f),
       movingLeft(false),
