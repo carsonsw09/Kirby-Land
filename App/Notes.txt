@@ -1,0 +1,20 @@
+=== Kirby Land Notes ===
+
+== Commands ==
+
+- make clean
+- make 
+- make run
+
+= Specific Scenes =
+
+- make run SCENE=start
+- make run SCENE=bedroom
+- make run SCENE=home
+
+====================================
+
+== Things to Do ==
+
+- Fix text bubbles in home Scenes
+- Fix speed of player in bedroom scene

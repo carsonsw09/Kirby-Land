@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 
-// Handles loading, rendering, and freeing a single image texture.
+// Handles loading, rendering, flipping, and freeing image textures.
 class Texture {
 public:
     Texture();

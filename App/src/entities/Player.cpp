@@ -1,4 +1,4 @@
-#include "Player.hpp"
+#include "entities/Player.hpp"
 
 Player::Player()
     : x(100.0f),
@@ -55,7 +55,6 @@ void Player::handleInput(const SDL_Event& event) {
 
             case SDLK_w:
             case SDLK_UP:
-                // Up currently does nothing.
                 break;
 
             default:
@@ -131,7 +130,6 @@ void Player::render(SDL_Renderer* renderer) {
         drawY = static_cast<int>(y + height / 2);
     }
 
-    // This keeps the direction fix you already liked.
     SDL_RendererFlip flip = facingRight ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
     playerTexture.renderFlipped(

@@ -1,103 +1,99 @@
-#include "Texture.hpp"
+#include "graphics/Texture.hpp"
 
 #include <SDL2/SDL_image.h>
+#include <cmath>
 #include <iostream>
 #include <queue>
 #include <vector>
-#include <cmath>
 
-// Gets a pixel from a surface that has already been converted to RGBA32.
 static Uint32 getPixel(SDL_Surface* surface, int x, int y) {
     Uint8* row = static_cast<Uint8*>(surface->pixels) + y * surface->pitch;
     Uint32* pixels = reinterpret_cast<Uint32*>(row);
     return pixels[x];
 }
 
-// Sets a pixel on a surface that has already been converted to RGBA32.
 static void setPixel(SDL_Surface* surface, int x, int y, Uint32 value) {
     Uint8* row = static_cast<Uint8*>(surface->pixels) + y * surface->pitch;
     Uint32* pixels = reinterpret_cast<Uint32*>(row);
     pixels[x] = value;
 }
 
-// Determines whether a pixel looks like the unwanted background.
-// This targets light gray / white background pixels like the ones
-// that keep showing around your pajama sprite.
 static bool isBackgroundPixel(SDL_PixelFormat* format, Uint32 pixel) {
-    Uint8 r, g, b, a;
+    Uint8 r;
+    Uint8 g;
+    Uint8 b;
+    Uint8 a;
+
     SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
 
-    // Already transparent is definitely background.
     if (a == 0) {
         return true;
     }
 
-    // Near-white / near-light-gray background detection.
-    // This is designed to match the kind of flat light background
-    // your sprite keeps arriving with.
-    bool brightEnough = (r >= 235 && g >= 235 && b >= 235);
+    bool brightEnough = r >= 235 && g >= 235 && b >= 235;
+
     bool lowColorDifference =
-        (std::abs((int)r - (int)g) <= 10) &&
-        (std::abs((int)g - (int)b) <= 10) &&
-        (std::abs((int)r - (int)b) <= 10);
+        std::abs(static_cast<int>(r) - static_cast<int>(g)) <= 10 &&
+        std::abs(static_cast<int>(g) - static_cast<int>(b)) <= 10 &&
+        std::abs(static_cast<int>(r) - static_cast<int>(b)) <= 10;
 
     return brightEnough && lowColorDifference;
 }
 
-// Flood-fills from the outer edges only, turning the detected
-// background transparent. This is safer than deleting every white pixel
-// because it only removes the connected outside background.
 static void removeConnectedBackground(SDL_Surface* surface) {
-    const int width = surface->w;
-    const int height = surface->h;
+    int width = surface->w;
+    int height = surface->h;
 
     std::vector<bool> visited(width * height, false);
-    std::queue<std::pair<int, int>> q;
+    std::queue<std::pair<int, int>> pixelsToVisit;
 
-    auto pushIfValid = [&](int x, int y) {
+    auto pushIfBackground = [&](int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) {
             return;
         }
 
         int index = y * width + x;
+
         if (visited[index]) {
             return;
         }
 
         Uint32 pixel = getPixel(surface, x, y);
+
         if (!isBackgroundPixel(surface->format, pixel)) {
             return;
         }
 
         visited[index] = true;
-        q.push({x, y});
+        pixelsToVisit.push({x, y});
     };
 
-    // Start from all border pixels.
     for (int x = 0; x < width; x++) {
-        pushIfValid(x, 0);
-        pushIfValid(x, height - 1);
+        pushIfBackground(x, 0);
+        pushIfBackground(x, height - 1);
     }
 
     for (int y = 0; y < height; y++) {
-        pushIfValid(0, y);
-        pushIfValid(width - 1, y);
+        pushIfBackground(0, y);
+        pushIfBackground(width - 1, y);
     }
 
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
+    while (!pixelsToVisit.empty()) {
+        auto [x, y] = pixelsToVisit.front();
+        pixelsToVisit.pop();
 
-        Uint8 r, g, b, a;
+        Uint8 r;
+        Uint8 g;
+        Uint8 b;
+        Uint8 a;
+
         SDL_GetRGBA(getPixel(surface, x, y), surface->format, &r, &g, &b, &a);
-
-        // Make this background pixel transparent.
         setPixel(surface, x, y, SDL_MapRGBA(surface->format, r, g, b, 0));
 
-        pushIfValid(x + 1, y);
-        pushIfValid(x - 1, y);
-        pushIfValid(x, y + 1);
-        pushIfValid(x, y - 1);
+        pushIfBackground(x + 1, y);
+        pushIfBackground(x - 1, y);
+        pushIfBackground(x, y + 1);
+        pushIfBackground(x, y - 1);
     }
 }
 
@@ -122,7 +118,6 @@ bool Texture::loadFromFile(SDL_Renderer* renderer, const std::string& filePath) 
         return false;
     }
 
-    // Convert to RGBA32 so alpha handling is consistent.
     SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(
         loadedSurface,
         SDL_PIXELFORMAT_RGBA32,
@@ -137,7 +132,6 @@ bool Texture::loadFromFile(SDL_Renderer* renderer, const std::string& filePath) 
         return false;
     }
 
-    // Remove only the connected light background.
     removeConnectedBackground(formattedSurface);
 
     SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, formattedSurface);
@@ -149,7 +143,6 @@ bool Texture::loadFromFile(SDL_Renderer* renderer, const std::string& filePath) 
         return false;
     }
 
-    // This is critical for real transparency to display correctly.
     SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
 
     imageWidth = formattedSurface->w;
@@ -166,7 +159,13 @@ void Texture::render(SDL_Renderer* renderer, int x, int y, int width, int height
         return;
     }
 
-    SDL_Rect destinationRect = { x, y, width, height };
+    SDL_Rect destinationRect = {
+        x,
+        y,
+        width,
+        height
+    };
+
     SDL_RenderCopy(renderer, texture, nullptr, &destinationRect);
 }
 
@@ -182,7 +181,12 @@ void Texture::renderFlipped(
         return;
     }
 
-    SDL_Rect destinationRect = { x, y, width, height };
+    SDL_Rect destinationRect = {
+        x,
+        y,
+        width,
+        height
+    };
 
     SDL_RenderCopyEx(
         renderer,
