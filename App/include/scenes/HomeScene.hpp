@@ -6,6 +6,8 @@
 #include "graphics/Texture.hpp"
 
 #include <SDL2/SDL.h>
+#include <string>
+#include <vector>
 
 // Outside-house cutscene after the bedroom scene.
 class HomeScene : public Scene {
@@ -25,6 +27,15 @@ public:
     void render() override;
 
 private:
+    struct DialogueLine {
+        std::string speaker;
+        std::string text;
+    };
+
+    void setupDialogue();
+    void advanceDialogue();
+    void renderCurrentDialogue();
+
     SDL_Renderer* renderer;
     TextRenderer* textRenderer;
 
@@ -53,6 +64,9 @@ private:
 
     bool kirbyWalking;
     bool showDialogue;
+
+    std::vector<DialogueLine> dialogueLines;
+    int currentDialogueIndex;
 };
 
 #endif
