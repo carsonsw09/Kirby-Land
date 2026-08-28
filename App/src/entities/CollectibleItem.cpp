@@ -1,4 +1,4 @@
-#include "CollectibleItem.hpp"
+#include "entities/CollectibleItem.hpp"
 
 CollectibleItem::CollectibleItem()
     : x(0),

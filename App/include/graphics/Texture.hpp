@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 
-// Handles loading, rendering, and freeing a single image texture.
+// Handles loading, rendering, flipping, and freeing image textures.
 class Texture {
 public:
     Texture();
@@ -22,6 +22,14 @@ public:
         int height,
         SDL_RendererFlip flip
     );
+
+    void renderCover(
+    SDL_Renderer* renderer,
+    int x,
+    int y,
+    int width,
+    int height
+);
 
     void free();
 

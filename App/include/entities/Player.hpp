@@ -1,7 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-#include "Texture.hpp"
+#include "graphics/Texture.hpp"
 
 #include <SDL2/SDL.h>
 #include <string>
