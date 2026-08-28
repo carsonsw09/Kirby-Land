@@ -23,6 +23,14 @@ public:
         SDL_RendererFlip flip
     );
 
+    void renderCover(
+    SDL_Renderer* renderer,
+    int x,
+    int y,
+    int width,
+    int height
+);
+
     void free();
 
     int getWidth() const;

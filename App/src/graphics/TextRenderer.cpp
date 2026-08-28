@@ -337,3 +337,224 @@ void TextRenderer::renderDialogueBox(
     SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
     SDL_DestroyTexture(textTexture);
 }
+
+void TextRenderer::renderSpeechBubble(
+    SDL_Renderer* renderer,
+    const std::string& message,
+    int centerX,
+    int topY,
+    int maxWidth,
+    bool tailPointsLeft
+) {
+    if (counterFont == nullptr) {
+        return;
+    }
+
+    SDL_Color textColor = {
+        0,
+        0,
+        0,
+        255
+    };
+
+    SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(
+        counterFont,
+        message.c_str(),
+        textColor,
+        maxWidth
+    );
+
+    if (textSurface == nullptr) {
+        SDL_Log(
+            "Could not create speech bubble text: %s",
+            TTF_GetError()
+        );
+        return;
+    }
+
+    SDL_Texture* textTexture =
+        SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    if (textTexture == nullptr) {
+        SDL_Log(
+            "Could not create speech bubble texture: %s",
+            SDL_GetError()
+        );
+
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+
+    const int paddingX = 25;
+    const int paddingY = 18;
+
+    int textWidth = textSurface->w;
+    int textHeight = textSurface->h;
+
+    int bubbleWidth = textWidth + paddingX * 2;
+    int bubbleHeight = textHeight + paddingY * 2;
+
+    int bubbleX = centerX - bubbleWidth / 2;
+    int bubbleY = topY;
+
+    /*
+     * Draw the rounded-looking speech bubble.
+     *
+     * SDL2 does not provide a native rounded rectangle,
+     * so we build the shape from rectangles and circles.
+     */
+
+    SDL_SetRenderDrawBlendMode(
+        renderer,
+        SDL_BLENDMODE_BLEND
+    );
+
+    // Main bubble.
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        245
+    );
+
+    SDL_Rect bubbleRect = {
+        bubbleX + 12,
+        bubbleY,
+        bubbleWidth - 24,
+        bubbleHeight
+    };
+
+    SDL_RenderFillRect(
+        renderer,
+        &bubbleRect
+    );
+
+    SDL_Rect leftRect = {
+        bubbleX,
+        bubbleY + 12,
+        bubbleWidth,
+        bubbleHeight - 24
+    };
+
+    SDL_RenderFillRect(
+        renderer,
+        &leftRect
+    );
+
+    // Give the bubble a strong outline.
+    SDL_SetRenderDrawColor(
+        renderer,
+        30,
+        30,
+        30,
+        255
+    );
+
+    SDL_Rect outlineRect = {
+        bubbleX,
+        bubbleY,
+        bubbleWidth,
+        bubbleHeight
+    };
+
+    SDL_RenderDrawRect(
+        renderer,
+        &outlineRect
+    );
+
+    /*
+     * Speech tail.
+     */
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        245
+    );
+
+    SDL_Point tail[3];
+
+    if (tailPointsLeft) {
+        tail[0] = {
+            bubbleX + 45,
+            bubbleY + bubbleHeight
+        };
+
+        tail[1] = {
+            bubbleX + 20,
+            bubbleY + bubbleHeight + 30
+        };
+
+        tail[2] = {
+            bubbleX + 75,
+            bubbleY + bubbleHeight
+        };
+    }
+    else {
+        tail[0] = {
+            bubbleX + bubbleWidth - 75,
+            bubbleY + bubbleHeight
+        };
+
+        tail[1] = {
+            bubbleX + bubbleWidth - 20,
+            bubbleY + bubbleHeight + 30
+        };
+
+        tail[2] = {
+            bubbleX + bubbleWidth - 45,
+            bubbleY + bubbleHeight
+        };
+    }
+
+    SDL_RenderDrawLine(
+        renderer,
+        tail[0].x,
+        tail[0].y,
+        tail[1].x,
+        tail[1].y
+    );
+
+    SDL_RenderDrawLine(
+        renderer,
+        tail[1].x,
+        tail[1].y,
+        tail[2].x,
+        tail[2].y
+    );
+
+    SDL_RenderDrawLine(
+        renderer,
+        tail[2].x,
+        tail[2].y,
+        tail[0].x,
+        tail[0].y
+    );
+
+    /*
+     * Draw the text.
+     */
+    SDL_Rect textRect = {
+        centerX - textWidth / 2,
+        bubbleY + paddingY,
+        textWidth,
+        textHeight
+    };
+
+    SDL_RenderCopy(
+        renderer,
+        textTexture,
+        nullptr,
+        &textRect
+    );
+
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+
+    SDL_SetRenderDrawBlendMode(
+        renderer,
+        SDL_BLENDMODE_NONE
+    );
+}

@@ -35,6 +35,15 @@ public:
     int maxWidth
 );
 
+    void renderSpeechBubble(
+    SDL_Renderer* renderer,
+    const std::string& message,
+    int centerX,
+    int topY,
+    int maxWidth,
+    bool tailPointsLeft
+);
+
 void renderFloatingText(
     SDL_Renderer* renderer,
     const std::string& message,

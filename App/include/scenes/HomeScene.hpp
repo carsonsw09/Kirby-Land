@@ -65,6 +65,10 @@ private:
     bool kirbyWalking;
     bool showDialogue;
 
+    bool leavingScene;
+    bool fadingOut;
+    Uint8 fadeAlpha;
+
     std::vector<DialogueLine> dialogueLines;
     int currentDialogueIndex;
 };

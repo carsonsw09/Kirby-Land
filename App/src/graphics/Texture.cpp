@@ -169,6 +169,67 @@ void Texture::render(SDL_Renderer* renderer, int x, int y, int width, int height
     SDL_RenderCopy(renderer, texture, nullptr, &destinationRect);
 }
 
+void Texture::renderCover(
+    SDL_Renderer* renderer,
+    int x,
+    int y,
+    int width,
+    int height
+) {
+    if (texture == nullptr || imageWidth <= 0 || imageHeight <= 0) {
+        return;
+    }
+
+    float imageAspect =
+        static_cast<float>(imageWidth) /
+        static_cast<float>(imageHeight);
+
+    float destinationAspect =
+        static_cast<float>(width) /
+        static_cast<float>(height);
+
+    SDL_Rect sourceRect = {
+        0,
+        0,
+        imageWidth,
+        imageHeight
+    };
+
+    // Image is wider than the destination.
+    // Crop the left/right sides.
+    if (imageAspect > destinationAspect) {
+        int sourceWidth =
+            static_cast<int>(imageHeight * destinationAspect);
+
+        sourceRect.x = (imageWidth - sourceWidth) / 2;
+        sourceRect.w = sourceWidth;
+    }
+
+    // Image is taller than the destination.
+    // Crop the top/bottom.
+    else if (imageAspect < destinationAspect) {
+        int sourceHeight =
+            static_cast<int>(imageWidth / destinationAspect);
+
+        sourceRect.y = (imageHeight - sourceHeight) / 2;
+        sourceRect.h = sourceHeight;
+    }
+
+    SDL_Rect destinationRect = {
+        x,
+        y,
+        width,
+        height
+    };
+
+    SDL_RenderCopy(
+        renderer,
+        texture,
+        &sourceRect,
+        &destinationRect
+    );
+}
+
 void Texture::renderFlipped(
     SDL_Renderer* renderer,
     int x,

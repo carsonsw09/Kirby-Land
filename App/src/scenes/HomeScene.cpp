@@ -1,4 +1,5 @@
 #include "scenes/HomeScene.hpp"
+#include <algorithm>
 
 HomeScene::HomeScene(
     SDL_Renderer* renderer,
@@ -24,7 +25,10 @@ HomeScene::HomeScene(
       kirbyStopX(0.0f),
       kirbyWalking(true),
       showDialogue(false),
-      currentDialogueIndex(0) {
+      leavingScene(false),
+      fadingOut(false),
+      fadeAlpha(0),
+      currentDialogueIndex(0){
 }
 
 bool HomeScene::load() {
@@ -66,6 +70,10 @@ void HomeScene::onEnter() {
     showDialogue = false;
     currentDialogueIndex = 0;
 
+    leavingScene = false;
+    fadingOut = false;
+    fadeAlpha = 0;
+
     setupDialogue();
 }
 
@@ -101,12 +109,21 @@ void HomeScene::handleEvent(const SDL_Event& event) {
 }
 
 void HomeScene::advanceDialogue() {
-    if (currentDialogueIndex < static_cast<int>(dialogueLines.size()) - 1) {
+    if (currentDialogueIndex <
+        static_cast<int>(dialogueLines.size()) - 1) {
+
         currentDialogueIndex++;
+    }
+    else {
+        // Dialogue is finished.
+        showDialogue = false;
+        leavingScene = true;
     }
 }
 
 void HomeScene::update() {
+
+    // Kirby's initial walk toward Bob.
     if (kirbyWalking) {
         kirbyX += kirbyWalkSpeed;
 
@@ -116,7 +133,35 @@ void HomeScene::update() {
             showDialogue = true;
             currentDialogueIndex = 0;
         }
+
+        return;
     }
+
+    // Kirby leaves toward the car.
+    if (leavingScene && !fadingOut) {
+
+        kirbyX -= kirbyWalkSpeed;
+
+        // Stop point near the car.
+        int carStopX = 300;
+
+        if (kirbyX <= carStopX) {
+            kirbyX = static_cast<float>(carStopX);
+            fadingOut = true;
+        }
+
+        return;
+    }
+
+    // Slowly fade the entire scene to black.
+    if (fadingOut) {
+
+    if (fadeAlpha < 255) {
+        fadeAlpha = static_cast<Uint8>(
+            std::min(255, static_cast<int>(fadeAlpha) + 2)
+        );
+    }
+}
 }
 
 void HomeScene::render() {
@@ -144,6 +189,37 @@ void HomeScene::render() {
     if (showDialogue) {
         renderCurrentDialogue();
     }
+    if (fadingOut) {
+    SDL_SetRenderDrawBlendMode(
+        renderer,
+        SDL_BLENDMODE_BLEND
+    );
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        0,
+        0,
+        0,
+        fadeAlpha
+    );
+
+    SDL_Rect fadeRect = {
+        0,
+        0,
+        screenWidth,
+        screenHeight
+    };
+
+    SDL_RenderFillRect(
+        renderer,
+        &fadeRect
+    );
+
+    SDL_SetRenderDrawBlendMode(
+        renderer,
+        SDL_BLENDMODE_NONE
+    );
+}
 }
 
 void HomeScene::renderCurrentDialogue() {
@@ -151,25 +227,44 @@ void HomeScene::renderCurrentDialogue() {
         return;
     }
 
-    const DialogueLine& currentLine = dialogueLines[currentDialogueIndex];
+    const DialogueLine& currentLine =
+        dialogueLines[currentDialogueIndex];
 
-    int dialogueCenterX = 0;
-    int dialogueY = 0;
+    int dialogueCenterX;
+    int dialogueY;
 
     if (currentLine.speaker == "Bob") {
         dialogueCenterX = bobX + bobWidth / 2;
-        dialogueY = bobY - 120;
+
+        // Higher above Bob.
+        dialogueY = bobY - 190;
+
+        textRenderer->renderSpeechBubble(
+            renderer,
+            currentLine.text,
+            dialogueCenterX,
+            dialogueY,
+            500,
+            false
+        );
     }
     else {
-        dialogueCenterX = static_cast<int>(kirbyX) + kirbyWidth / 2;
-        dialogueY = static_cast<int>(kirbyY) - 120;
-    }
+        dialogueCenterX =
+            static_cast<int>(kirbyX) + kirbyWidth / 2;
 
-    textRenderer->renderDialogueBox(
-        renderer,
-        currentLine.text,
-        dialogueCenterX,
-        dialogueY,
-        500
-    );
+        // Higher above Kirby.
+        dialogueY =
+            static_cast<int>(kirbyY) - 190;
+
+        textRenderer->renderSpeechBubble(
+            renderer,
+            currentLine.text,
+            dialogueCenterX,
+            dialogueY,
+            500,
+            true
+        );
+    }
 }
+
+    

@@ -5,7 +5,11 @@ enum class SceneType {
     None,
     Start,
     Bedroom,
-    Home
+    Home,
+    Car,
+    Driving,
+    E470,
+    GunClub
 };
 
 #endif

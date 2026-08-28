@@ -12,7 +12,11 @@ SRC = src/main.cpp \
       src/entities/CollectibleItem.cpp \
       src/scenes/StartScene.cpp \
       src/scenes/BedroomScene.cpp \
-      src/scenes/HomeScene.cpp
+      src/scenes/HomeScene.cpp \
+      src/scenes/CarScene.cpp \
+      src/scenes/DrivingScene.cpp \
+      src/scenes/E470Scene.cpp \
+      src/scenes/GunClubScene.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

@@ -11,6 +11,10 @@
 - make run SCENE=start
 - make run SCENE=bedroom
 - make run SCENE=home
+- make run SCENE=car
+- make run SCENE=driving
+- make run SCENE=e470
+- make run SCENE=gunclub
 
 ====================================
 
